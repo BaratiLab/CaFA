@@ -192,7 +192,7 @@ def main(args, config):
                 steps_per_sec = config.training.print_every / (end_time - start_time)
                 print(
                     f' Step: {global_step}'
-                    f' Pred Loss: {np.round(loss, 4)}'
+                    f' Pred Loss: {np.round(loss, 4)}'    # this loss is not averaged across ranks
                     f' LR: {np.round(optim.param_groups[0]["lr"], 6)}'
                     f' Steps/sec: {np.round(steps_per_sec, 3)}'
                     f' ETA: {np.round((max_steps - global_step) / steps_per_sec / 3600, 3)}h'

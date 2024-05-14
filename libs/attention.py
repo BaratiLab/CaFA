@@ -3,10 +3,7 @@ from torch import nn
 import torch.nn.functional as F
 import numpy as np
 from einops import rearrange, repeat, reduce
-from einops.layers.torch import Rearrange
 from torch.nn.init import xavier_uniform_, constant_, xavier_normal_, orthogonal_
-from .positional_encoding_module import RotaryEmbedding, GaussianFourierFeatureTransform, \
-    apply_rotary_pos_emb, apply_2d_rotary_pos_emb, SirenNet, apply_3d_rotary_pos_emb
 from .basics import RMSNorm
 import math
 

@@ -183,12 +183,12 @@ def main(args, config):
             # only do this on rank zero
             if rank == 0:
                 dump_state(model_ddp, optim, sched, global_step, log_dir)
+                dump_state(ema_model, optim, sched, global_step, log_dir, ema=True)
 
             dist.barrier()
 
         if global_step % config.training.validate_every == 0:
             if rank == 0:
-                dump_state(ema_model, optim, sched, global_step, log_dir, ema=True)
                 validate_loop(ema_model, config.data.val_timestamps,
                               logger, global_step, val_dataset,
                               config.training.val_batch_size, config, device)
@@ -203,7 +203,7 @@ def main(args, config):
                 steps_per_sec = config.training.print_every / (end_time - start_time)
                 print(
                     f' Step: {global_step}'
-                    f' Pred Loss: {np.round(loss, 4)}'
+                    f' Pred Loss: {np.round(loss, 4)}'    # this loss is not averaged across ranks
                     f' LR: {np.round(optim.param_groups[0]["lr"], 6)}'
                     f' Steps/sec: {np.round(steps_per_sec, 3)}'
                     f' ETA: {np.round((max_steps - global_step) / steps_per_sec / 3600, 3)}h'
