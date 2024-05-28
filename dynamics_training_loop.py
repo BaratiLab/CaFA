@@ -83,7 +83,7 @@ def configure_optimizers(config, model):
         if "spherical_pe" or 'Basis' in name:
             no_decay.append(m)
         else:
-            no_decay.append(m)
+            decay.append(m)
 
     optimizer = torch.optim.AdamW(
         [
@@ -187,13 +187,19 @@ def configure_train_dataset_and_loader(trainsteps, batch_size, config):
                    'train', 'all', interval, trainsteps,
                    years_range=years_range,
                    shuffle=True))
-
-    train_dataloader = DataLoader(train_dataset,
-                                  batch_size=int(batch_size // dist.get_world_size()),
-                                  num_workers=config.training.train_num_workers,
-                                  shuffle=False,
-                                  # sampler=sampler,
-                                  pin_memory=True, drop_last=True)
+    if dist.is_initialized():
+        train_dataloader = DataLoader(train_dataset,
+                                    batch_size=int(batch_size // dist.get_world_size()),
+                                    num_workers=config.training.train_num_workers,
+                                    shuffle=False,
+                                    # sampler=sampler,
+                                    pin_memory=True, drop_last=True)
+    else:
+        train_dataloader = DataLoader(train_dataset,
+                                    batch_size=batch_size,
+                                    num_workers=config.training.train_num_workers,
+                                    shuffle=False,
+                                    pin_memory=True, drop_last=True)
 
     return train_dataset, train_dataloader
 
