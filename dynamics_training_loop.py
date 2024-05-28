@@ -244,7 +244,6 @@ def dump_state(model, optimizer, scheduler, global_step, log_dir, ema=False):
     else:
         state_dict = {
             'model': model.state_dict(),   # this is a ema model
-            'global_step': global_step,
         }
         save_checkpoint(state_dict, log_dir + '/model' + f'/ema_{(global_step // 1000)}k_iter.pth')
 
