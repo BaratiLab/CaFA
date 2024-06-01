@@ -1,0 +1,88 @@
+log_dir: experiments/6432_epd_stage1_160k    # where to save the logs
+project_name: $your_project_name     # will be used by wandb
+
+model:
+
+    base_dim: 256  # the width in the encoder and decoder
+    latent_dim: 512  # the width in the processor
+
+    decoder:      # configuration for the cross-attention decoder
+        latent_dim: 256   # the projection layer width (projected to single dimension function)
+        heads: 24
+        dim_head: 64
+        kernel_multiplier: 2
+        use_distance_encoding: True
+        use_softmax: False
+        qk_norm: True
+
+    processor:  # configuration for the processor
+        latent_dim: 256
+        heads: 16
+        dim_head: 64
+        kernel_multiplier: 2
+        use_distance_encoding: True
+        use_softmax: False
+        qk_norm: True
+        depth: 6
+
+    l_spherical_harmonics: 20  # level of spherical harmonics
+
+    pivot_ratio: 2    # patch size ratio
+
+
+data:
+    data_dir: $your_data_dir
+    interval: 1    # 6 hrs
+    valsteps: 29    # 168 hrs
+    val_timestamps: [1, 12, 20, 28]
+    nlat: 32
+    nlon: 64
+    years_range: [-1, -1]    # filter of years range, [-1,-1] means all years
+
+    constant_names: ['land_sea_mask',
+                    'angle_of_sub_gridscale_orography',
+                    'anisotropy_of_sub_gridscale_orography',
+                    'soil_type']
+    variable_groups: [
+                      ['2m_temperature', 'mean_sea_level_pressure', '10m_u_component_of_wind', '10m_v_component_of_wind'],
+                      [ 'total_precipitation_6hr', 'total_precipitation_24hr'],
+                      ['u_component_of_wind', 'v_component_of_wind', 'specific_humidity',
+                       'temperature', 'geopotential'],
+                      ]
+    variable_levels:  [1, 1, 1, 1, 1, 1,
+                       13, 13,
+                       13, 13, 13,
+                       ]
+
+    surface_variable_weight: [1., 0.1, 0.1, 0.1, 0.05, 0.05]
+    multi_level_variable_weight: [0.5, 0.5, 0.1, 1.0, 1.0]
+
+# most configuration following: https://github.com/microsoft/ClimaX/blob/main/configs/pretrain_climax.yaml
+training:
+    lr: 5.e-4
+    beta_1: 0.9
+    beta_2: 0.95
+    weight_decay: 1.e-6
+    warmup_steps: 1600   # 0.05
+    max_steps: 160000   # 200k
+    warmup_start_lr: 1.e-8
+    eta_min: 1.e-7
+    init_batch_size: 16
+    final_batch_size: 16
+    val_batch_size: 32
+    ckpt_every: 40000   # 20k
+    validate_every: 40000   # 200
+    print_every: 20
+    train_num_workers: 4
+
+    smooth_l1_beta: 0.01
+    level_weight: linear
+    max_grad_norm: 4.0
+
+    curriculum_values: [1, 2]
+    curriculum_milestone: [0, 45000]
+    gradient_checkpointing_segment_size: 2
+
+    use_compile: True   # this doesn't work for gradient checkpointing
+    resume_from_checkpoint: False
+
